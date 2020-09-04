@@ -12,10 +12,17 @@
 #include <stdlib.h>
 #define DHT11_PORT GPIOC
 #define DHT11_PIN GPIO_PIN_3
+struct value
+{
+	uint8_t integer;
+	uint8_t decimal;
+	uint16_t calculation_value;
+};
 void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 void set_pin_output(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 uint8_t DHT11_start();
-void  DHT11_get_H(float *RH);
-void  DHT11_get_T(float *TEMP);
+void  DHT11_get_H(uint8_t *humidity_integer, uint8_t *humidity_decimal);
+void  DHT11_get_T(uint8_t *temperature_integer, uint8_t *temperature_decimal);
 void  DHT11_checksum(uint8_t *check_sum);
+
 #endif /* INC_DHT11_H_ */

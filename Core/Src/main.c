@@ -48,10 +48,19 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-float Rh=0,Temp=0,time=0,last_T=0,Ierror=0,Kp=40,Ti=30,Td=15,set=30;
-uint8_t check_s=0,n=0,T_int=0,T_digit=0,H_int=0,H_digit=0,set_int=30,set_digit=0,Kp_int=45,Kp_digit=0,Ti_int=30,Ti_digit=0,Td_int=20,Td_digit=0,Received;
+
+uint8_t check_s=0,n=0,Received;
+uint16_t last_T=0,size = 0,send_time=0,time=0;
 char data[150];
-uint16_t size = 0,regulations=0,send_time=0;
+int16_t Ierror=0;
+
+struct value RH;
+struct value Temp;
+struct value set;
+struct value Kp;
+struct value Ti;
+struct value Td;
+
 
 /* USER CODE END PV */
 
@@ -61,6 +70,7 @@ void SystemClock_Config(void);
 void HAL_SYSTICK_Callback();
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void conversion();
+void init();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -106,6 +116,8 @@ int main(void)
   HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
   HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6,SET);
   HAL_UART_Receive_IT(&huart3, &Received, 1);
+  init();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,18 +128,19 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-last_T=Temp;
+last_T=(100*Temp.integer+Temp.decimal);
 conversion();
      n= DHT11_start();
      if(n==1)
      {
-    	 DHT11_get_H(&Rh);
-    	 DHT11_get_T(&Temp);
+    	 DHT11_get_H(&RH.integer,&RH.decimal);
+    	 DHT11_get_T(&Temp.integer,&Temp.decimal);
     	 DHT11_checksum(&check_s);
      }
-     Ierror= PID (set,Ierror,Temp,last_T, time,&htim2,TIM_CHANNEL_1,Kp,Ti,Td);
+     Ierror= PID (set.calculation_value,Ierror,Temp.calculation_value,last_T, time,&htim2,TIM_CHANNEL_1,Kp.calculation_value,Ti.calculation_value,Td.calculation_value);
      time=0;
-     size = sprintf(data, "TEMP: %d.%d \n\rsetT: %d.%d \n\rKp: %d.%d \n\rTi: %d.%d \n\rTd: %d.%d \n\r \n\r \n\r",T_int,T_digit,set_int,set_digit,Kp_int, Kp_digit,Ti_int,Ti_digit,Td_int,Td_digit);
+    // size = sprintf(data, "TEMP: %c \n\rsetT: %c \n\rKp: %c \n\rTi: %c \n\rTd: %c \n\r \n\r \n\r",((char)Temp),((char)set),((char)Kp),((char)Ti),((char)Td));
+    size = sprintf(data, "TEMP: %d.%d \n\rsetT: %d.%d \n\rKp: %d.%d \n\rTi: %d.%d \n\rTd: %d.%d \n\r \n\r \n\r",Temp.integer,Temp.decimal,set.integer,set.decimal,Kp.integer, Kp.decimal,Ti.integer,Ti.decimal,Td.integer,Td.decimal);
   }
   /* USER CODE END 3 */
 }
@@ -181,131 +194,160 @@ void HAL_SYSTICK_Callback()
 }
 void conversion()	//Przelicza wartosc float na uint8_t czesc calkowitra i dziesietna w celu przeslania obu czesci po UART w wolnej chwili uzyje struktury lub unii
 {
-set=(float)set_int+(((float)set_digit)/100);
-Kp=(float)Kp_int+(((float)Kp_digit)/100);
-Ti=(float)Ti_int+(((float)Ti_digit)/100);
-Td=(float)Td_int+(((float)Td_digit)/100);
-T_int=(int)Temp;
-T_digit=(int)(Temp*100-(T_int*100));
+set.calculation_value=(100*set.integer+set.decimal);
+Temp.calculation_value=(100*Temp.integer+Temp.decimal);
+RH.calculation_value=(100*RH.integer+RH.decimal);
+Kp.calculation_value=(100*Kp.integer+Kp.decimal);
+Ti.calculation_value=(100*Ti.integer+Ti.decimal);
+Td.calculation_value=(100*Td.integer+Td.decimal);
 }
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	switch (Received) {
 
 	 case 84:
-		 if(set_digit<90)
+		 if(set.decimal<90)
 		 {
-			 set_digit+=10;
+			 set.decimal+=10;
 		 }
 		 else
 		 {
-			 set_digit=0;
-			 set_int++;
+			 set.decimal=0;
+			 set.integer++;
 		 }
 	 break;
 
 	 case 116:
-	 if(set_digit>0)
+	 if(set.decimal>0)
 	 {
-		 set_digit-=10;
+		 set.decimal-=10;
 	 }
 	 else
 	 {
-		 set_digit=90;
-		 set_int--;
-	 }
-	 if (set_int<=0 && set_digit<=0)
-	 {
-		 set_int=0;
-	 	 set_digit=0;
+		 if (set.integer<=0 && set.decimal<=0)
+		 {
+			 set.integer=0;
+		 	 set.decimal=0;
+		 }
+		 else
+		 {
+		 set.decimal=90;
+		 set.integer--;
+		 }
 	 }
 	 break;
 	 case 75:
-		 if(Kp_digit<90)
+		 if(Kp.decimal<90)
 				 {
-					 Kp_digit+=10;
+					 Kp.decimal+=10;
 				 }
 				 else
 				 {
-					 Kp_digit=0;
-					 Kp_int++;
+					 Kp.decimal=0;
+					 Kp.integer++;
 				 }
 	 break;
 	 case 107:
-		 if(Kp_digit>0)
+		 if(Kp.decimal>0)
 			 {
-				 Kp_digit-=10;
+				 Kp.decimal-=10;
 			 }
 			 else
 			 {
-				 Kp_digit=90;
-				 Kp_int--;
-			 }
-			 if (Kp_int<=0 && Kp_digit<=0)
-			 {
-				 Kp_int=0;
-			 	 Kp_digit=0;
+				 if (Kp.integer<=0 && Kp.integer<=0)
+				 {
+					 Kp.integer=0;
+				 	 Kp.decimal=0;
+				 }
+				 else
+				 {
+				 Kp.decimal=90;
+				 Kp.integer--;
+				 }
 			 }
 	 break;
 	 case 73:
-		 if(Ti_digit<90)
+		 if(Ti.decimal<90)
 				 {
-					 Ti_digit+=10;
+					 Ti.decimal+=10;
 				 }
 				 else
 				 {
-					 Ti_digit=0;
-					 Ti_int++;
+					 Ti.decimal=0;
+					 Ti.integer++;
 				 }
 	 break;
 	 case 105:
-		 if(Ti_digit>0)
+		 if(Ti.decimal>0)
 			 {
-				 Ti_digit-=10;
+				 Ti.decimal-=10;
 			 }
 			 else
 			 {
-				 Ti_digit=90;
-				 Ti_int--;
-			 }
-			 if (Ti_int<=0 && Ti_digit<=0)
-			 {
-				 Ti_int=0;
-			 	 Ti_digit=0;
-			 }
-	 break;
-	 case 68:
-		 if(Td_digit<90)
+				 if (Ti.integer<=0 && Ti.decimal<=0)
 				 {
-					 Td_digit+=10;
+					 Ti.integer=0;
+				 	 Ti.decimal=0;
 				 }
 				 else
 				 {
-					 Td_digit=0;
-					 Td_int++;
+				 Ti.decimal=90;
+				 Ti.integer--;
+				 }
+			 }
+
+	 break;
+	 case 68:
+		 if(Td.decimal<90)
+				 {
+					 Td.decimal+=10;
+				 }
+				 else
+				 {
+					 Td.decimal=0;
+					 Td.integer++;
 				 }
 	 break;
 	 case 100:
-		 if(Td_digit>0)
+		 if(Td.decimal>0)
 			 {
-				 Td_digit-=10;
+				 Td.decimal-=10;
 			 }
 			 else
 			 {
-				 Td_digit=90;
-				 Td_int--;
+				 if (Td.integer<=0 && Td.decimal<=0)
+				 {
+					 Td.integer=0;
+				 	 Td.decimal=0;
+				 }
+				 else
+				 {
+				 Td.decimal=90;
+				 Td.integer--;
+				 }
 			 }
-			 if (Td_int<=0 && Td_digit<=0)
-			 {
-				 Td_int=0;
-			 	 Td_digit=0;
-			 }
+
 	 break;
 	 default:
 
 	 break;
 	 }
 	HAL_UART_Receive_IT(&huart3, &Received, 1);
+}
+void init()
+{
+	  RH.integer=0;
+	  RH.decimal=0;
+	  Temp.integer=0;
+	  Temp.decimal=0;
+	  Kp.integer=45;
+	  Kp.decimal=0;
+	  Ti.integer=30;
+	  Ti.decimal=0;
+	  Td.integer=10;
+	  Td.decimal=0;
+	  set.integer=26;
+	  set.decimal=0;
 }
 /* USER CODE END 4 */
 

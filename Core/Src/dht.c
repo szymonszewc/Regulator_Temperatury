@@ -9,6 +9,7 @@
 /*
  * Funkcja konfiguruj¹ca pin jako wejœcie
  */
+
 void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -60,21 +61,21 @@ uint8_t DHT11_start()
 /*
  * Funkcja pobieraj¹ca informacje o wilgotnoœci
  */
-void DHT11_get_H(float *RH)
+void DHT11_get_H(uint8_t *humidity_integer, uint8_t *humidity_decimal)
 {
-	uint8_t i=0,rh_int=0,rh_digit=0;
-	 float rh_intf=0,rh_digitf=0;
+	uint8_t i=0;
+	 //float rh_intf=0,rh_digitf=0;
 		for(i=0;i<8;i++)
 		{
 			while (!(HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)));   // wait for DHT signal to go high
 			us_Delay (40);
 			if (!(HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)))   // if the pin is low
 			{
-				rh_int&= ~(1<<(7-i));
+				*humidity_integer&= ~(1<<(7-i));
 			}
 			else
 			{
-				rh_int|= (1<<(7-i));
+				*humidity_integer|= (1<<(7-i));
 			while ((HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)));
 			}
 		}
@@ -84,38 +85,33 @@ void DHT11_get_H(float *RH)
 					us_Delay (40);
 					if (!(HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)))   // if the pin is low
 					{
-						rh_digit&= ~(1<<(7-i));
+						*humidity_decimal&= ~(1<<(7-i));
 					}
 					else
 					{
-						rh_digit|= (1<<(7-i));
+						*humidity_decimal|= (1<<(7-i));
 						while ((HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)));
 					}
 				}
-
-				rh_intf=(float)rh_int;
-				rh_digitf=(float)rh_digit;
-				*RH= (rh_intf+(rh_digitf/10));
 }
 
 /*
  * Funkcja pobieraj¹ca informacje o temperaturze
  */
-void DHT11_get_T(float *TEMP)
+void DHT11_get_T(uint8_t *temperature_integer, uint8_t *temperature_decimal)
 {
- uint8_t i=0,temp_int=0,temp_digit=0;
- float temp_intf=0,temp_digitf=0;
+ uint8_t i=0;
 		for(i=0;i<8;i++)
 		{
 					while (!(HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)));   // wait for DHT signal to go high
 					us_Delay (40);
 					if (!(HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)))
 					{
-						temp_int&= ~(1<<(7-i));
+						*temperature_integer&= ~(1<<(7-i));
 					}
 					else
 					{
-						temp_int|= (1<<(7-i));
+						*temperature_integer|= (1<<(7-i));
 						while ((HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)));
 					}
 				}
@@ -125,17 +121,15 @@ void DHT11_get_T(float *TEMP)
 					us_Delay (40);
 					if (!(HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)))
 					{
-						temp_digit&= ~(1<<(7-i));
+						*temperature_decimal&= ~(1<<(7-i));
 					}
 					else
 					{
-						temp_digit|= (1<<(7-i));
+						*temperature_decimal|= (1<<(7-i));
 						while ((HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)));
 					}
 				}
-				temp_intf=(float)temp_int;
-				temp_digitf=(float)temp_digit;
-				*TEMP=(temp_intf+(temp_digitf/10));
+
 }
 
 /*
