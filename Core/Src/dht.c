@@ -6,9 +6,41 @@
  */
 #include "dht.h"
 
-/*
- * Funkcja konfiguruj¹ca pin jako wejœcie
- */
+void increase_value(struct value *data)
+{
+	if(data->decimal<90)
+			 {
+				 data->decimal+=10;
+			 }
+			 else
+			 {
+				 data->decimal=0;
+				 data->integer++;
+			 }
+
+}
+
+void decrease_value(struct value *data)
+{
+	 if(data->decimal >0)
+	 	 	 	 {
+					 data->decimal-=10;
+				 }
+				 else
+				 {
+					 if (data->integer<=0 && data->decimal<=0)
+					 {
+						 data->integer=0;
+					 	 data->decimal=0;
+					 }
+					 else
+					 {
+					 data->decimal=90;
+					 data->integer--;
+					 }
+				 }
+}
+
 
 void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 {
@@ -19,9 +51,7 @@ void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 	HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
 }
 
-/*
- * Funkcja konfiguruj¹ca pin jako wyjœcie
- */
+
 void set_pin_output(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -30,9 +60,8 @@ void set_pin_output(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
 }
-/*
- * Funkcja rozpoczynaj¹ca komunikacjê z czujnikiem DHT11
- */
+
+
 uint8_t DHT11_start()
 {
 	set_pin_output(GPIOC,GPIO_PIN_3);
@@ -58,13 +87,12 @@ uint8_t DHT11_start()
 		us_Delay(80);
 	return response;
 }
-/*
- * Funkcja pobieraj¹ca informacje o wilgotnoœci
- */
+
+
+
 void DHT11_get_H(uint8_t *humidity_integer, uint8_t *humidity_decimal)
 {
 	uint8_t i=0;
-	 //float rh_intf=0,rh_digitf=0;
 		for(i=0;i<8;i++)
 		{
 			while (!(HAL_GPIO_ReadPin (DHT11_PORT, DHT11_PIN)));   // wait for DHT signal to go high
@@ -95,9 +123,7 @@ void DHT11_get_H(uint8_t *humidity_integer, uint8_t *humidity_decimal)
 				}
 }
 
-/*
- * Funkcja pobieraj¹ca informacje o temperaturze
- */
+
 void DHT11_get_T(uint8_t *temperature_integer, uint8_t *temperature_decimal)
 {
  uint8_t i=0;
@@ -132,9 +158,6 @@ void DHT11_get_T(uint8_t *temperature_integer, uint8_t *temperature_decimal)
 
 }
 
-/*
- *
- */
 void DHT11_checksum(uint8_t *check_sum)
 {
  uint8_t i=0,checksum=0;

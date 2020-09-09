@@ -218,127 +218,29 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	switch (Received) {
 
 	 case 84:
-		 if(set.decimal<90)
-		 {
-			 set.decimal+=10;
-		 }
-		 else
-		 {
-			 set.decimal=0;
-			 set.integer++;
-		 }
+		 increase_value(&set);
 	 break;
 
 	 case 116:
-	 if(set.decimal>0)
-	 {
-		 set.decimal-=10;
-	 }
-	 else
-	 {
-		 if (set.integer<=0 && set.decimal<=0)
-		 {
-			 set.integer=0;
-		 	 set.decimal=0;
-		 }
-		 else
-		 {
-		 set.decimal=90;
-		 set.integer--;
-		 }
-	 }
+		 decrease_value(&set);
 	 break;
 	 case 75:
-		 if(Kp.decimal<90)
-				 {
-					 Kp.decimal+=10;
-				 }
-				 else
-				 {
-					 Kp.decimal=0;
-					 Kp.integer++;
-				 }
+		 increase_value(&Kp);
 	 break;
 	 case 107:
-		 if(Kp.decimal>0)
-			 {
-				 Kp.decimal-=10;
-			 }
-			 else
-			 {
-				 if (Kp.integer<=0 && Kp.integer<=0)
-				 {
-					 Kp.integer=0;
-				 	 Kp.decimal=0;
-				 }
-				 else
-				 {
-				 Kp.decimal=90;
-				 Kp.integer--;
-				 }
-			 }
+		decrease_value(&Kp);
 	 break;
 	 case 73:
-		 if(Ti.decimal<90)
-				 {
-					 Ti.decimal+=10;
-				 }
-				 else
-				 {
-					 Ti.decimal=0;
-					 Ti.integer++;
-				 }
+		 increase_value(&Ti);
 	 break;
 	 case 105:
-		 if(Ti.decimal>0)
-			 {
-				 Ti.decimal-=10;
-			 }
-			 else
-			 {
-				 if (Ti.integer<=0 && Ti.decimal<=0)
-				 {
-					 Ti.integer=0;
-				 	 Ti.decimal=0;
-				 }
-				 else
-				 {
-				 Ti.decimal=90;
-				 Ti.integer--;
-				 }
-			 }
-
+		 decrease_value(&Ti);
 	 break;
 	 case 68:
-		 if(Td.decimal<90)
-				 {
-					 Td.decimal+=10;
-				 }
-				 else
-				 {
-					 Td.decimal=0;
-					 Td.integer++;
-				 }
+		 increase_value(&Td);
 	 break;
 	 case 100:
-		 if(Td.decimal>0)
-			 {
-				 Td.decimal-=10;
-			 }
-			 else
-			 {
-				 if (Td.integer<=0 && Td.decimal<=0)
-				 {
-					 Td.integer=0;
-				 	 Td.decimal=0;
-				 }
-				 else
-				 {
-				 Td.decimal=90;
-				 Td.integer--;
-				 }
-			 }
-
+		 decrease_value(&Td);
 	 break;
 	 default:
 
@@ -370,6 +272,7 @@ void init()
 /*
  * Inicjalizuje pocz¹tkowe nastawy regulatora
  */
+
 
 /* USER CODE END 4 */
 
