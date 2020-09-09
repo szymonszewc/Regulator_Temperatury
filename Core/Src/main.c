@@ -61,6 +61,9 @@ struct value Kp;
 struct value Ti;
 struct value Td;
 
+/*
+ * Definicja struktury value w pliku dht.h
+ */
 
 /* USER CODE END PV */
 
@@ -69,7 +72,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void HAL_SYSTICK_Callback();
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
-void conversion();
+void conversion(struct value *data);
 void init();
 /* USER CODE END PFP */
 
@@ -129,7 +132,12 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 last_T=(100*Temp.integer+Temp.decimal);
-conversion();
+conversion(&Temp);
+conversion(&RH);
+conversion(&Kp);
+conversion(&Ti);
+conversion(&Td);
+conversion(&set);
      n= DHT11_start();
      if(n==1)
      {
@@ -139,7 +147,6 @@ conversion();
      }
      Ierror= PID (set.calculation_value,Ierror,Temp.calculation_value,last_T, time,&htim2,TIM_CHANNEL_1,Kp.calculation_value,Ti.calculation_value,Td.calculation_value);
      time=0;
-    // size = sprintf(data, "TEMP: %c \n\rsetT: %c \n\rKp: %c \n\rTi: %c \n\rTd: %c \n\r \n\r \n\r",((char)Temp),((char)set),((char)Kp),((char)Ti),((char)Td));
     size = sprintf(data, "TEMP: %d.%d \n\rsetT: %d.%d \n\rKp: %d.%d \n\rTi: %d.%d \n\rTd: %d.%d \n\r \n\r \n\r",Temp.integer,Temp.decimal,set.integer,set.decimal,Kp.integer, Kp.decimal,Ti.integer,Ti.decimal,Td.integer,Td.decimal);
   }
   /* USER CODE END 3 */
@@ -192,15 +199,20 @@ void HAL_SYSTICK_Callback()
 		send_time=0;
 	}
 }
-void conversion()	//Przelicza wartosc float na uint8_t czesc calkowitra i dziesietna w celu przeslania obu czesci po UART w wolnej chwili uzyje struktury lub unii
+
+/*
+ * Co 1s odœwie¿a interfejs na telefonie wysy³aj¹c wiadomoœc przygotowan¹ w funkcji main
+ */
+
+void conversion(struct value *data)
 {
-set.calculation_value=(100*set.integer+set.decimal);
-Temp.calculation_value=(100*Temp.integer+Temp.decimal);
-RH.calculation_value=(100*RH.integer+RH.decimal);
-Kp.calculation_value=(100*Kp.integer+Kp.decimal);
-Ti.calculation_value=(100*Ti.integer+Ti.decimal);
-Td.calculation_value=(100*Td.integer+Td.decimal);
+data->calculation_value=10*(data->integer)+((data->integer)/10);
 }
+
+/*
+ * Modyfikuje wartoœc do obliczeñ na podstawie czêœci rzeczywistej i dziesiêtnej
+ */
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	switch (Received) {
@@ -334,6 +346,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	 }
 	HAL_UART_Receive_IT(&huart3, &Received, 1);
 }
+
+/*
+ * Pozwala zmieniac wartoœci poszczególnych nastaw regulatora przy pomocy aplikacji na telefonie
+ */
+
 void init()
 {
 	  RH.integer=0;
@@ -349,6 +366,11 @@ void init()
 	  set.integer=26;
 	  set.decimal=0;
 }
+
+/*
+ * Inicjalizuje pocz¹tkowe nastawy regulatora
+ */
+
 /* USER CODE END 4 */
 
 /**

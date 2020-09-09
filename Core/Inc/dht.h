@@ -18,6 +18,12 @@ struct value
 	uint8_t decimal;
 	uint16_t calculation_value;
 };
+
+/*
+ * Wartoœc calkowita i dziesiêtna jako oddzielne zmienne pozwala mi przesy³ac wartoœc rzeczywist¹ w postaci 0.00 na interfejs w telefonie.
+ * Do obliczeñ u¿ywam wartoœci rzeczywistej pomno¿onej razy 10
+ */
+
 void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 void set_pin_output(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 uint8_t DHT11_start();
