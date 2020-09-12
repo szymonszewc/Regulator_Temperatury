@@ -6,40 +6,7 @@
  */
 #include "dht.h"
 
-void increase_value(struct value *data)
-{
-	if(data->decimal<90)
-			 {
-				 data->decimal+=10;
-			 }
-			 else
-			 {
-				 data->decimal=0;
-				 data->integer++;
-			 }
 
-}
-
-void decrease_value(struct value *data)
-{
-	 if(data->decimal >0)
-	 	 	 	 {
-					 data->decimal-=10;
-				 }
-				 else
-				 {
-					 if (data->integer<=0 && data->decimal<=0)
-					 {
-						 data->integer=0;
-					 	 data->decimal=0;
-					 }
-					 else
-					 {
-					 data->decimal=90;
-					 data->integer--;
-					 }
-				 }
-}
 
 
 void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)

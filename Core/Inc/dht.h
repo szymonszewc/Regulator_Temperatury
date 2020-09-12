@@ -12,29 +12,8 @@
 #include <stdlib.h>
 #define DHT11_PORT GPIOC
 #define DHT11_PIN GPIO_PIN_3
-struct value
-{
-	uint8_t integer;
-	uint8_t decimal;
-	uint16_t calculation_value;
-};
 
-/*
- * Wartoœc calkowita i dziesiêtna jako oddzielne zmienne pozwala mi przesy³ac wartoœc rzeczywist¹ w postaci 0.00 na interfejs w telefonie.
- * Do obliczeñ u¿ywam wartoœci rzeczywistej pomno¿onej razy 10
- */
 
-void increase_value(struct value *data);
-
-/*
- * Pozwala zwiêkszyc wartoœc struktury value
- */
-
-void decrease_value(struct value *data);
-
-/*
- * Pozwala zmniejszyc wartosc wybranej struktury value
- */
 
 void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 

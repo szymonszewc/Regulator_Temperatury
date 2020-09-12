@@ -29,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "dht.h"
 #include "PID.h"
+#include "value.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -63,7 +64,7 @@ struct value Ti;
 struct value Td;
 
 /*
- * Definicja struktury value w pliku dht.h
+ * Definicja struktury value w pliku value.h
  */
 
 /* USER CODE END PV */
@@ -73,7 +74,6 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void HAL_SYSTICK_Callback();
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
-void conversion(struct value *data);
 void init();
 /* USER CODE END PFP */
 
@@ -141,6 +141,9 @@ conversion(&Kp);
 conversion(&Ti);
 conversion(&Td);
 conversion(&set);
+/*
+ * value.h
+ */
 last_T=Temp.calculation_value;
 last_ierror=ierror;
 last_error=error;
@@ -149,6 +152,9 @@ last_error=error;
     	 DHT11_get_H(&RH.integer,&RH.decimal);
     	 DHT11_get_T(&Temp.integer,&Temp.decimal);
     	 DHT11_checksum(&check_s);
+    	 /*
+    	  * dht.h
+    	  */
      }
     size = sprintf(data, "TEMP: %d.%d \n\rsetT: %d.%d \n\rKp: %d.%d \n\rTi: %d.%d \n\rTd: %d.%d \n\r \n\r \n\r",Temp.integer,Temp.decimal,set.integer,set.decimal,Kp.integer, Kp.decimal,Ti.integer,Ti.decimal,Td.integer,Td.decimal);
     if (time>=500)
@@ -158,6 +164,9 @@ last_error=error;
     	derror=calculate_derror(error,last_error);
     	regulation_value=PID(error,ierror,derror,Kp.calculation_value,Ti.calculation_value,Td.calculation_value);
     	time=0;
+    	/*
+    	 * PID.h
+    	 */
     }
   }
   /* USER CODE END 3 */
@@ -215,14 +224,6 @@ void HAL_SYSTICK_Callback()
  * Co 1s odœwie¿a interfejs na telefonie wysy³aj¹c wiadomoœc przygotowan¹ w funkcji main
  */
 
-void conversion(struct value *data)
-{
-data->calculation_value=10*(data->integer)+((data->decimal)/10);
-}
-
-/*
- * Modyfikuje wartoœc do obliczeñ na podstawie czêœci rzeczywistej i dziesiêtnej
- */
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
