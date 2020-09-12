@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -49,10 +50,10 @@
 
 /* USER CODE BEGIN PV */
 
-uint8_t check_s=0,n=0,Received;
-uint16_t last_T=0,size = 0,send_time=0,time=0;
 char data[150];
-int16_t Ierror=0;
+uint8_t check_s=0,Received;
+int16_t ierror=0,last_ierror=0,last_error,error=0,derror=0,last_T=0,size = 0,send_time=0,time=0;
+uint32_t regulation_value=0;
 
 struct value RH;
 struct value Temp;
@@ -112,11 +113,12 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   MX_USART2_UART_Init();
+  MX_DMA_Init();
   MX_TIM2_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim1);
-  HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start_DMA(&htim2,TIM_CHANNEL_1,&regulation_value,1);
   HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6,SET);
   HAL_UART_Receive_IT(&huart3, &Received, 1);
   init();
@@ -132,22 +134,31 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 last_T=(100*Temp.integer+Temp.decimal);
+last_ierror=ierror;
 conversion(&Temp);
 conversion(&RH);
 conversion(&Kp);
 conversion(&Ti);
 conversion(&Td);
 conversion(&set);
-     n= DHT11_start();
-     if(n==1)
+last_T=Temp.calculation_value;
+last_ierror=ierror;
+last_error=error;
+     if(DHT11_start())
      {
     	 DHT11_get_H(&RH.integer,&RH.decimal);
     	 DHT11_get_T(&Temp.integer,&Temp.decimal);
     	 DHT11_checksum(&check_s);
      }
-     Ierror= PID (set.calculation_value,Ierror,Temp.calculation_value,last_T, time,&htim2,TIM_CHANNEL_1,Kp.calculation_value,Ti.calculation_value,Td.calculation_value);
-     time=0;
     size = sprintf(data, "TEMP: %d.%d \n\rsetT: %d.%d \n\rKp: %d.%d \n\rTi: %d.%d \n\rTd: %d.%d \n\r \n\r \n\r",Temp.integer,Temp.decimal,set.integer,set.decimal,Kp.integer, Kp.decimal,Ti.integer,Ti.decimal,Td.integer,Td.decimal);
+    if (time>=500)
+    {
+    	error=calculate_error(set.calculation_value,Temp.calculation_value);
+    	ierror=calculate_ierror(error,last_error,last_ierror);
+    	derror=calculate_derror(error,last_error);
+    	regulation_value=PID(error,ierror,derror,Kp.calculation_value,Ti.calculation_value,Td.calculation_value);
+    	time=0;
+    }
   }
   /* USER CODE END 3 */
 }
@@ -206,7 +217,7 @@ void HAL_SYSTICK_Callback()
 
 void conversion(struct value *data)
 {
-data->calculation_value=10*(data->integer)+((data->integer)/10);
+data->calculation_value=10*(data->integer)+((data->decimal)/10);
 }
 
 /*
@@ -259,12 +270,12 @@ void init()
 	  RH.decimal=0;
 	  Temp.integer=0;
 	  Temp.decimal=0;
-	  Kp.integer=45;
-	  Kp.decimal=0;
-	  Ti.integer=30;
+	  Kp.integer=4;
+	  Kp.decimal=50;
+	  Ti.integer=1;
 	  Ti.decimal=0;
-	  Td.integer=10;
-	  Td.decimal=0;
+	  Td.integer=0;
+	  Td.decimal=50;
 	  set.integer=26;
 	  set.decimal=0;
 }

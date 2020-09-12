@@ -5,25 +5,46 @@
  *      Author: User
  */
 #include "PID.h"
-int16_t PID (uint16_t set_value,int16_t ierror, uint16_t Temp, uint16_t last_T,uint16_t time,TIM_HandleTypeDef *htim, uint32_t Channel, uint16_t Kp, uint16_t Ti, uint16_t Td)
+uint32_t PID (int16_t error,int16_t ierror,int16_t derror, uint16_t Kp, uint16_t Ti, uint16_t Td)
 {
-int16_t error=Temp-set_value;
-time=time/1000;
-int16_t derror=((Temp-set_value)-(last_T-set_value));
-int16_t Ierror=ierror+(((Temp-set_value)+(last_T-set_value)));
-if(Ierror>=10000)		//Wieksza wartosc powoduje blokowanie tego czlonu, gdyz uklad chlodzenia jest wysoce niewydajny
+if(ierror>=10000)		//Wieksza wartosc powoduje blokowanie tego czlonu, gdyz uklad chlodzenia jest wysoce niewydajny
 {
-	Ierror=10000;
+	ierror=10000;
 }
-if(Ierror<(-10000))
+if(ierror<(-1000))
 {
-	Ierror=-10000;
+	ierror=-1000;
 }
-int32_t regulation = (error*Kp + derror*Td + Ierror*Ti)+6500;
-if(regulation >=19999)
-	regulation=19999;
-if (regulation<7000)
+uint32_t regulation=0;
+if ((error*Kp + derror*Td + ierror*Ti)>0)
+{
+	regulation=(error*Kp + derror*Td + ierror*Ti)+6500;
+}
+else
+{
 	regulation=0;
-__HAL_TIM_SET_COMPARE(htim, Channel, regulation);
-return Ierror;
+}
+if(regulation >=19999)
+{
+	regulation=19999;
+}
+if (regulation<5000)
+{
+	regulation=0;
+}
+return regulation;
+}
+
+int16_t calculate_ierror (int16_t error,int16_t last_error, int16_t last_ierror)
+{
+	return (last_ierror+(((error)+(last_error)))*0.5); //Co 0,5s, wystarczaj¹ce przyblizenie
+}
+
+int16_t calculate_derror(int16_t error, int16_t last_error)
+{
+	return((error)-(last_error))*2; //Co 0,5 sekundy
+}
+int16_t calculate_error(uint16_t set_value,uint16_t real_value)
+{
+	return (real_value-set_value);
 }
