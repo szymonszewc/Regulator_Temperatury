@@ -868,15 +868,15 @@ void set_pin_input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
  80009e6:	2100      	movs	r1, #0
  80009e8:	4668      	mov	r0, sp
  80009ea:	f001 ffef 	bl	80029cc <memset>
-        GPIO_InitStruct.Pin = GPIO_Pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
+		GPIO_InitStruct.Pin = GPIO_Pin;
+		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
  80009ee:	4669      	mov	r1, sp
  80009f0:	4620      	mov	r0, r4
-        GPIO_InitStruct.Pin = GPIO_Pin;
+		GPIO_InitStruct.Pin = GPIO_Pin;
  80009f2:	9500      	str	r5, [sp, #0]
-        HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
+		HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
  80009f4:	f000 ff4a 	bl	800188c <HAL_GPIO_Init>
 }
  80009f8:	b005      	add	sp, #20
