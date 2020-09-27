@@ -53,7 +53,7 @@
 
 char data[150];
 uint8_t check_s=0,Received;
-int16_t ierror=0,last_ierror=0,last_error,error=0,derror=0,last_T=0,size = 0,send_time=0,time=0;
+int16_t ierror=0,last_ierror=0,last_error,error=0,derror=0,last_T=0,size = 0,send_time=0,time=0,us_time=0;
 uint32_t regulation_value=0;
 
 struct value RH;
@@ -75,6 +75,7 @@ void SystemClock_Config(void);
 void HAL_SYSTICK_Callback();
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void init();
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -133,41 +134,39 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-last_T=(100*Temp.integer+Temp.decimal);
-last_ierror=ierror;
-conversion(&Temp);
-conversion(&RH);
-conversion(&Kp);
-conversion(&Ti);
-conversion(&Td);
-conversion(&set);
-/*
- * value.h
- */
-last_T=Temp.calculation_value;
-last_ierror=ierror;
-last_error=error;
-     if(DHT11_start())
-     {
-    	 DHT11_get_H(&RH.integer,&RH.decimal);
-    	 DHT11_get_T(&Temp.integer,&Temp.decimal);
-    	 DHT11_checksum(&check_s);
-    	 /*
-    	  * dht.h
-    	  */
-     }
-    size = sprintf(data, "TEMP: %d.%d \n\rsetT: %d.%d \n\rKp: %d.%d \n\rTi: %d.%d \n\rTd: %d.%d \n\r \n\r \n\r",Temp.integer,Temp.decimal,set.integer,set.decimal,Kp.integer, Kp.decimal,Ti.integer,Ti.decimal,Td.integer,Td.decimal);
-    if (time>=500)
-    {
-    	error=calculate_error(set.calculation_value,Temp.calculation_value);
-    	ierror=calculate_ierror(error,last_error,last_ierror);
-    	derror=calculate_derror(error,last_error);
-    	regulation_value=PID(error,ierror,derror,Kp.calculation_value,Ti.calculation_value,Td.calculation_value);
-    	time=0;
-    	/*
-    	 * PID.h
-    	 */
-    }
+	  	  last_T=(100*Temp.integer+Temp.decimal);
+	  	  last_ierror=ierror;
+	  	  value_conversion(&Temp);
+	  	  value_conversion(&RH);
+	  	  value_conversion(&Kp);
+	  	  value_conversion(&Ti);
+	  	  value_conversion(&Td);
+	  	  value_conversion(&set);
+	  	  /*
+	  	   * value.h
+	  	   */
+	  	  last_T=Temp.calculation_value;
+	  	  last_ierror=ierror;
+	  	  last_error=error;
+	  	  if ( DHT11_start() ) {
+	  		  	  DHT11_get_H(&RH.integer,&RH.decimal);
+	  		  	  DHT11_get_T(&Temp.integer,&Temp.decimal);
+	  		  	  DHT11_checksum(&check_s);
+	  		  	  /*
+	  		  	   * dht.h
+	  		  	   */
+	  	  }
+	  	  size = sprintf(data, "TEMP: %d.%d \n\rsetT: %d.%d \n\rKp: %d.%d \n\rTi: %d.%d \n\rTd: %d.%d \n\r \n\r \n\r",Temp.integer,Temp.decimal,set.integer,set.decimal,Kp.integer, Kp.decimal,Ti.integer,Ti.decimal,Td.integer,Td.decimal);
+	  	  if ( time >= 500 ) {
+	  		  	  error=pid_calculate_error(set.calculation_value,Temp.calculation_value);
+	  		  	  ierror=pid_calculate_ierror(error,last_error,last_ierror);
+	  		  	  derror=pid_calculate_derror(error,last_error);
+	  		  	  regulation_value=pid(error,ierror,derror,Kp.calculation_value,Ti.calculation_value,Td.calculation_value);
+	  		  	  time=0;
+	  		  	  /*
+	  		  	   * PID.h
+	  		  	   */
+	  	  }
   }
   /* USER CODE END 3 */
 }
@@ -213,10 +212,9 @@ void HAL_SYSTICK_Callback()
 {
 	time++;
 	send_time++;
-	if(send_time>=1000)
-	{
-		HAL_UART_Transmit_IT(&huart3, data, size);
-		send_time=0;
+	if ( send_time >= 1000 ) {
+			HAL_UART_Transmit_IT(&huart3, data, size);
+			send_time=0;
 	}
 }
 
@@ -224,40 +222,43 @@ void HAL_SYSTICK_Callback()
  * Co 1s odœwie¿a interfejs na telefonie wysy³aj¹c wiadomoœc przygotowan¹ w funkcji main
  */
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if ( htim->Instance == TIM3 ) {
+			us_time++;
+	}
+}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	switch (Received) {
-
-	 case 84:
-		 increase_value(&set);
-	 break;
-
-	 case 116:
-		 decrease_value(&set);
-	 break;
-	 case 75:
-		 increase_value(&Kp);
-	 break;
-	 case 107:
-		decrease_value(&Kp);
-	 break;
-	 case 73:
-		 increase_value(&Ti);
-	 break;
-	 case 105:
-		 decrease_value(&Ti);
-	 break;
-	 case 68:
-		 increase_value(&Td);
-	 break;
-	 case 100:
-		 decrease_value(&Td);
-	 break;
-	 default:
-
-	 break;
-	 }
+	case 84:
+		 	value_increase(&set);
+	break;
+	case 116:
+		 	value_decrease(&set);
+	break;
+	case 75:
+			value_increase(&Kp);
+	break;
+	case 107:
+			value_decrease(&Kp);
+	break;
+	case 73:
+			value_increase(&Ti);
+	break;
+	case 105:
+			value_decrease(&Ti);
+	break;
+	case 68:
+			value_increase(&Td);
+	break;
+	case 100:
+			value_decrease(&Td);
+	break;
+	default:
+	break;
+	}
 	HAL_UART_Receive_IT(&huart3, &Received, 1);
 }
 
@@ -267,18 +268,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 void init()
 {
-	  RH.integer=0;
-	  RH.decimal=0;
-	  Temp.integer=0;
-	  Temp.decimal=0;
-	  Kp.integer=4;
-	  Kp.decimal=50;
-	  Ti.integer=1;
-	  Ti.decimal=0;
-	  Td.integer=0;
-	  Td.decimal=50;
-	  set.integer=26;
-	  set.decimal=0;
+	  RH.integer = 0;
+	  RH.decimal = 0;
+	  Temp.integer = 0;
+	  Temp.decimal = 0;
+	  Kp.integer = 4;
+	  Kp.decimal = 50;
+	  Ti.integer = 1;
+	  Ti.decimal = 0;
+	  Td.integer = 0;
+	  Td.decimal = 50;
+	  set.integer = 26;
+	  set.decimal = 0;
 }
 
 /*

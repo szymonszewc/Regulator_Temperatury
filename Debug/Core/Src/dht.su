@@ -1,6 +1,6 @@
 dht.c:12:6:set_pin_input	32	static
 dht.c:22:6:set_pin_output	32	static
 dht.c:32:9:DHT11_start	8	static
-dht.c:94:6:DHT11_get_T	24	static
-dht.c:60:6:DHT11_get_H	0	static
-dht.c:128:6:DHT11_checksum	24	static
+dht.c:83:6:DHT11_get_T	24	static
+dht.c:57:6:DHT11_get_H	0	static
+dht.c:110:6:DHT11_checksum	24	static

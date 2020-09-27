@@ -1,4 +1,4 @@
-PID.c:8:10:PID	8	static
-PID.c:38:9:calculate_ierror	16	static
-PID.c:43:9:calculate_derror	0	static
-PID.c:47:9:calculate_error	0	static
+PID.c:17:10:pid	8	static
+PID.c:41:9:pid_calculate_ierror	16	static
+PID.c:47:9:pid_calculate_derror	0	static
+PID.c:51:9:pid_calculate_error	0	static

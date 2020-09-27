@@ -9,8 +9,7 @@
 #define INC_VALUE_H_
 #include "main.h"
 
-struct value
-{
+struct value {
 	uint8_t integer;
 	uint8_t decimal;
 	uint16_t calculation_value;
@@ -21,19 +20,19 @@ struct value
  * Do obliczeñ u¿ywam wartoœci rzeczywistej pomno¿onej razy 10
  */
 
-void conversion(struct value *data);
+void value_conversion(struct value *data);
 
 /*
  * Pozwala modyfikowac wartosc do obliczen na podstawie czesci calkowitej i dziesietnej
  */
 
-void increase_value(struct value *data);
+void value_increase(struct value *data);
 
 /*
  * Pozwala zwiêkszyc wartoœc struktury value
  */
 
-void decrease_value(struct value *data);
+void value_decrease(struct value *data);
 
 /*
  * Pozwala zmniejszyc wartosc wybranej struktury value
