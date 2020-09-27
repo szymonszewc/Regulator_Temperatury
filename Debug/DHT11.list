@@ -891,25 +891,25 @@ void set_pin_output(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
  80009fe:	b085      	sub	sp, #20
  8000a00:	4604      	mov	r4, r0
  8000a02:	460d      	mov	r5, r1
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
+		GPIO_InitTypeDef GPIO_InitStruct = {0};
  8000a04:	2210      	movs	r2, #16
  8000a06:	2100      	movs	r1, #0
  8000a08:	4668      	mov	r0, sp
  8000a0a:	f001 ffdf 	bl	80029cc <memset>
-	GPIO_InitStruct.Pin = GPIO_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+		GPIO_InitStruct.Pin = GPIO_Pin;
+		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
  8000a0e:	2301      	movs	r3, #1
  8000a10:	9301      	str	r3, [sp, #4]
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
  8000a12:	2302      	movs	r3, #2
-	HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
+		HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
  8000a14:	4669      	mov	r1, sp
  8000a16:	4620      	mov	r0, r4
-	GPIO_InitStruct.Pin = GPIO_Pin;
+		GPIO_InitStruct.Pin = GPIO_Pin;
  8000a18:	9500      	str	r5, [sp, #0]
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
  8000a1a:	9303      	str	r3, [sp, #12]
-	HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
+		HAL_GPIO_Init(GPIOx,&GPIO_InitStruct);
  8000a1c:	f000 ff36 	bl	800188c <HAL_GPIO_Init>
 }
  8000a20:	b005      	add	sp, #20
